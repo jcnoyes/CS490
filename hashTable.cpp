@@ -66,7 +66,7 @@ int main()
 	bool valid = false;
 
 	//get size
-	int overflow = (hashSize/4) + 1;  // M/4 + 1, plus one for rounding up
+	int overflow = (hashSize/4);  // M/4
 	int hashAndOverflow = hashSize + overflow;  // M + M/4
 
 	//create the hashtable
@@ -86,6 +86,7 @@ int main()
 	programData->originalKey = 0;
 	programData->tableLocation = 0;
 	programData->synonym = 0;
+	programData->checkInsert = true;
 
 	//start reading the file
 	cout << "Starting file read..." << endl;
@@ -93,9 +94,18 @@ int main()
 
 	if(valid == false)
 	{
-		cout << "There was an error reading input.dat ";
-		cout << "please check to make sure file exists" << endl;
-		cout << "Press enter to continue...";
+		writeSummary(programData, hashTable, hashAndOverflow);
+		if(programData->checkInsert != false)
+		{
+			cout << "There was an error reading input.dat ";
+			cout << "please check to make sure file exists" << endl << endl;
+		}
+		else
+		{
+			cout << "The hash table was not able to hold all the data, please make" << endl;
+			cout << "the M size larger." << endl;
+			cout << "Press enter to continue...";
+		}
 		cin.ignore();
 		return 0;
 	}
@@ -176,9 +186,10 @@ bool ObtainAndImplementFileCommands(tableDataEntry tableArray[], int size, data 
 				valid = insert(tableArray, pdata, size);
 				if(valid == false)
 				{
-					cout << "There was an error, could not insert into table." << endl;
-					cout << "Press enter to continue.";
-					cin.ignore();
+					pdata->checkInsert = false;
+					writeLog(pdata, logFile);
+					logFile.close();
+					return valid;
 				}
 			}
 			else if(pdata->command == 'L') //lookup
@@ -186,7 +197,7 @@ bool ObtainAndImplementFileCommands(tableDataEntry tableArray[], int size, data 
 				valid = lookup(tableArray, pdata, size);
 				if(valid == false)
 				{
-					cout << "Could not lookup data."  << endl;
+					//change checkLookUp to false for log file writing
 					pdata->checkLookUp = false;
 				}
 			}
@@ -264,6 +275,7 @@ bool insert(tableDataEntry tableArray[], data *pdata, int size)
 		tableArray[keyValue].data=dataValue;
 		tableArray[keyValue].key=keyValue;
 		pdata->numInserts = pdata->numInserts + 1;
+		pdata->probeCount = pdata->probeCount + 1;
 		pdata->tableLocation = keyValue;
 		return true;
 	}
@@ -326,12 +338,13 @@ bool lookup(tableDataEntry tableArray[], data *pdata, int size)
 		return false;
 	}
 	//value was found in the table
-	if(pdata->checkLookUp = true);
+	if(pdata->checkLookUp = true)
 	{
 		//get data and place them in the struct to write to log
 		pdata->dataValue = tableArray[lookUpKey].data;
 		pdata->keyValue = tableArray[lookUpKey].key;
 		pdata->tableLocation = lookUpKey;
+		pdata->probeCount = pdata->probeCount + 1; //increment probe count
 	}
 
 	return true;
@@ -351,6 +364,13 @@ void writeLog(data *pdata, ofstream& logout)
 		logout << pdata->dataValue << endl;
 		logout << "Item added: key = " << pdata->originalKey << ", data value = " << 
 			pdata->dataValue << endl;
+
+		if(pdata->checkInsert == false)
+		{
+			logout << "Unable to insert data, overflow section full" << endl;
+			logout << "Teminating program...";
+			return;
+		}
 	}
 
 	else if(pdata->command == 'L')
@@ -410,10 +430,16 @@ void writeSummary(data *pdata, tableDataEntry tableArray[], int size)
 	summaryStream << endl << starDiv << endl;
 	summaryStream << "Summary:" << endl;
 	summaryStream << starDiv << endl;
-	summaryStream << "Number of table entries: " << pdata->numInserts << endl;
+	summaryStream << "Number of table inserts: " << pdata->numInserts << endl;
 	summaryStream << "Number of table look ups: " << pdata->numLookups << endl;
 	summaryStream << "Number of synonyms: " << pdata->synonym << endl;
 	summaryStream << "Number of probes: " << pdata->totalProbe << endl;
+
+	if(pdata->checkInsert == false)
+	{
+		summaryStream << "Error Overflow section of the table is maxed out" << endl; 
+		summaryStream << "unable to insert any more data."  << endl;
+	}
 	summaryStream << starDiv << endl;
 
 	//close the summaryStream
