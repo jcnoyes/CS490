@@ -37,10 +37,12 @@ struct data
 	int originalKey;	//original key value
 	int tableLocation;	//location of where the value is inserted
 	float dataValue;	//value of the data from a lookup or lookup
+	float loadFactor;	//# of entries / table size
 
 	//the values that are used for the summary
 	int numLookups;		//total number of look ups
 	int numInserts;		//total number of inserts
+	int totalCommands;	//total number of look ups and inserts
 	int probeCount;		//number of probes per command
 	int totalProbe;		//total number of probes
 	float lookUpProbe;	//total probes from lookups
@@ -85,6 +87,7 @@ int main()
 	data *programData = new data;
 	programData->numLookups = 0;
 	programData->numInserts = 0;
+	programData->totalCommands = 0;
 	programData->probeCount = 0;
 	programData->totalProbe = 0;
 	programData->originalKey = 0;
@@ -126,12 +129,14 @@ int main()
 	cout << endl << "Summary" << endl << endl;
 	cout << "Number of inserts = " << programData->numInserts << endl;
 	cout << "Number of lookups = " << programData->numLookups << endl;
+	cout << "Total number of commands = " << programData->totalCommands << endl;
 	cout << "Total insert probes = " << programData->insertProbes << endl;
 	cout << "Total look up probes = " << programData->lookUpProbe << endl;
 	cout << "Total probes = " << programData->totalProbe << endl;
 	cout << "Average number of insert probes = " << programData->avgInsertProbes << endl;
 	cout << "Average number of look up probes = " << programData->avgLookUpProbes << endl;
-	cout << "Total synonyms = " << programData->synonym << endl << endl;
+	cout << "Total synonyms = " << programData->synonym << endl;
+	cout << "Load factor = " << programData->loadFactor << endl << endl;
 	cout << "Summary saved as summary.txt" << endl;
 	cout << "Log file saved as logout.txt" << endl << endl;
 	cout << "Press enter to exit program..." << endl;
@@ -446,16 +451,28 @@ void writeSummary(data *pdata, tableDataEntry tableArray[], int size)
 		summaryStream << tableArray[i].key << "\t\t" << tableArray[i].data << endl;
 	}
 
+	//calculate the total number of commands
+	pdata->totalCommands = pdata->numInserts + pdata->numLookups;
+
 	//print the statistics from pdata to summary.txt
 	summaryStream << endl << starDiv << endl;
 	summaryStream << "Summary:" << endl;
 	summaryStream << starDiv << endl;
 	summaryStream << "Number of table inserts: " << pdata->numInserts << endl;
 	summaryStream << "Number of table look ups: " << pdata->numLookups << endl;
+	summaryStream << "Total number of commands: " << pdata->totalCommands << endl;
 	summaryStream << "Number of synonyms: " << pdata->synonym << endl;
 	summaryStream << "Number of probes: " << pdata->totalProbe << endl;
 	summaryStream << "Number of insert probes: " << pdata->insertProbes << endl;
 	summaryStream << "Number of look up probes: " << pdata->lookUpProbe << endl;
+
+	//calculate the load factor
+	float tempNum = pdata->numInserts;
+	float tempDem = size;
+	pdata->loadFactor = tempNum/tempDem;
+
+	summaryStream << "Load factor = " << pdata->loadFactor << endl;
+
 	summaryStream << starDiv << endl;
 	
 	//calculate the average
