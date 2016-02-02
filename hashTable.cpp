@@ -43,6 +43,8 @@ struct data
 	int numInserts;		//total number of inserts
 	int probeCount;		//number of probes per command
 	int totalProbe;		//total number of probes
+	float lookUpProbe;	//total probes from lookups
+	float insertProbes;	//total probes from inserts
 	int overflowSlot;	//if in overflow, place where its slot is
 	int synonym;		//number of synonyms - entries with the same hash number
 
@@ -86,6 +88,8 @@ int main()
 	programData->originalKey = 0;
 	programData->tableLocation = 0;
 	programData->synonym = 0;
+	programData->lookUpProbe = 0;
+	programData->insertProbes = 0;
 	programData->checkInsert = true;
 
 	//start reading the file
@@ -276,6 +280,7 @@ bool insert(tableDataEntry tableArray[], data *pdata, int size)
 		tableArray[keyValue].key=keyValue;
 		pdata->numInserts = pdata->numInserts + 1;
 		pdata->probeCount = pdata->probeCount + 1;
+		pdata->insertProbes = pdata->insertProbes + pdata->probeCount;
 		pdata->tableLocation = keyValue;
 		return true;
 	}
@@ -288,6 +293,7 @@ bool insert(tableDataEntry tableArray[], data *pdata, int size)
 		for(int i = overflowArea; i < size; i++)
 		{
 			pdata->probeCount = pdata->probeCount + 1;
+			pdata->insertProbes = pdata->insertProbes + 1;
 			if(tableArray[i].key == -1)
 			{
 				tableArray[i].data=dataValue;
@@ -314,12 +320,14 @@ bool lookup(tableDataEntry tableArray[], data *pdata, int size)
 	{
 		pdata->checkLookUp = false;
 		pdata->probeCount = pdata->probeCount+1;
+		pdata->lookUpProbe = pdata->lookUpProbe + 1;
 
 		//serach overflow sections
 		int overflow = hashSize;
 		for( int i = overflow; i < size; i++)
 		{
 			pdata->probeCount = pdata->probeCount + 1;
+			pdata->lookUpProbe = pdata->lookUpProbe + 1;
 			if(tableArray[i].key == lookUpKey)
 			{
 				//found data in overflow section
@@ -345,6 +353,7 @@ bool lookup(tableDataEntry tableArray[], data *pdata, int size)
 		pdata->keyValue = tableArray[lookUpKey].key;
 		pdata->tableLocation = lookUpKey;
 		pdata->probeCount = pdata->probeCount + 1; //increment probe count
+		pdata->lookUpProbe = pdata->lookUpProbe + 1;
 	}
 
 	return true;
@@ -434,6 +443,16 @@ void writeSummary(data *pdata, tableDataEntry tableArray[], int size)
 	summaryStream << "Number of table look ups: " << pdata->numLookups << endl;
 	summaryStream << "Number of synonyms: " << pdata->synonym << endl;
 	summaryStream << "Number of probes: " << pdata->totalProbe << endl;
+	summaryStream << "Number of insert probes: " << pdata->insertProbes << endl;
+	summaryStream << "Number of look up probes: " << pdata->lookUpProbe << endl;
+	summaryStream << starDiv << endl;
+	
+	//calculate the averages
+	float insertAvg = pdata->insertProbes/pdata->numInserts;
+	float lookUpAvg = pdata->lookUpProbe/pdata->numLookups;
+
+	summaryStream << "Average number of insert probes: " << insertAvg << endl;
+	summaryStream << "Average number of look up probes: " << lookUpAvg << endl;
 
 	if(pdata->checkInsert == false)
 	{
