@@ -45,6 +45,8 @@ struct data
 	int totalProbe;		//total number of probes
 	float lookUpProbe;	//total probes from lookups
 	float insertProbes;	//total probes from inserts
+	float avgInsertProbes;	//average number of insert probes
+	float avgLookUpProbes;	//average number of look up probes
 	int overflowSlot;	//if in overflow, place where its slot is
 	int synonym;		//number of synonyms - entries with the same hash number
 
@@ -90,6 +92,8 @@ int main()
 	programData->synonym = 0;
 	programData->lookUpProbe = 0;
 	programData->insertProbes = 0;
+	programData->avgInsertProbes = 0;
+	programData->avgLookUpProbes = 0;
 	programData->checkInsert = true;
 
 	//start reading the file
@@ -119,11 +123,18 @@ int main()
 
 	//print out hashtable and summary to standard out
 	printHashTable(hashTable, hashAndOverflow);
-	cout << "number of inserts = " << programData->numInserts << endl;
-	cout << "number of lookups = " << programData->numLookups << endl;
-	cout << "total probes = " << programData->totalProbe << endl;
-	cout << "total synonyms = " << programData->synonym << endl << endl;
-	cout << "Press enter to continue..." << endl;
+	cout << endl << "Summary" << endl << endl;
+	cout << "Number of inserts = " << programData->numInserts << endl;
+	cout << "Number of lookups = " << programData->numLookups << endl;
+	cout << "Total insert probes = " << programData->insertProbes << endl;
+	cout << "Total look up probes = " << programData->lookUpProbe << endl;
+	cout << "Total probes = " << programData->totalProbe << endl;
+	cout << "Average number of insert probes = " << programData->avgInsertProbes << endl;
+	cout << "Average number of look up probes = " << programData->avgLookUpProbes << endl;
+	cout << "Total synonyms = " << programData->synonym << endl << endl;
+	cout << "Summary saved as summary.txt" << endl;
+	cout << "Log file saved as logout.txt" << endl << endl;
+	cout << "Press enter to exit program..." << endl;
 	cin.ignore();
 
 	return 0;
@@ -447,12 +458,25 @@ void writeSummary(data *pdata, tableDataEntry tableArray[], int size)
 	summaryStream << "Number of look up probes: " << pdata->lookUpProbe << endl;
 	summaryStream << starDiv << endl;
 	
-	//calculate the averages
-	float insertAvg = pdata->insertProbes/pdata->numInserts;
-	float lookUpAvg = pdata->lookUpProbe/pdata->numLookups;
+	//calculate the average
+	//protection from dividing by zero
+	if(pdata->numInserts == 0)
+	{
+		pdata->numInserts = 1;
+	}
 
-	summaryStream << "Average number of insert probes: " << insertAvg << endl;
-	summaryStream << "Average number of look up probes: " << lookUpAvg << endl;
+	if(pdata->numLookups == 0)
+	{
+		pdata->numLookups = 1;
+	}
+
+	//actual average calculation
+	pdata->avgInsertProbes = pdata->insertProbes/pdata->numInserts;
+	pdata->avgLookUpProbes = pdata->lookUpProbe/pdata->numLookups;
+
+	//print out averages
+	summaryStream << "Average number of insert probes: " << pdata->avgInsertProbes << endl;
+	summaryStream << "Average number of look up probes: " << pdata->avgLookUpProbes << endl;
 
 	if(pdata->checkInsert == false)
 	{
