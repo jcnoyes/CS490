@@ -110,6 +110,7 @@ int main()
 		{
 			cout << "There was an error reading input.dat ";
 			cout << "please check to make sure file exists" << endl << endl;
+			cout << "Press enter to continue...";
 		}
 		else
 		{
