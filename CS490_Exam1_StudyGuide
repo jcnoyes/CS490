@@ -137,35 +137,197 @@ areas of memory can be accessed.
 *********************************************
 batch multiprocessing vs time sharing systems
 *********************************************
-batch multiprocessing is used to maximize the processor's use, by having one process work while
-another process waits for I/O.
+batch multiprocessing is used to maximize the processor's use, by having one 
+process work while another process waits for I/O.
 
-Time sharing systems are used for interactive jobs while processor time is shared between multiple
-users.  The OS executes each user programs in short bursts giving the illusion of speed.
+Time sharing systems are used for interactive jobs while processor time is shared 
+between multiple users.  The OS executes each user programs in short bursts giving 
+the illusion of speed.
 
-time slicing - at each clock interrupt OS regains control and could assign the processor to another 
-user in a time sharing system.
+time slicing - at each clock interrupt OS regains control and could assign the processor
+to another user in a time sharing system.
 
-Process - a program in execution.  A collection of one or more threads and associated system resources.
+Process - a program in execution.  A collection of one or more threads and associated
+system resources.
 
-execution context (process state) - the internal data by which the OS is able to supervise and control
-the process.
+execution context (process state) - the internal data by which the OS is able to 
+supervise and control the process.
 
-Thread - a process can be broken down into multiple concurrent threads that execute cooperatively to perform the
-work of the process.
+Thread - a process can be broken down into multiple concurrent threads that execute 
+cooperatively to perform the work of the process.
 
 ***********************************
 interleaved vs overlapped execution
 ***********************************
-Interleaving execution - interleaving the execution steps of each process via time slices: only one process runs
-at a time, and if it does not complete during its time slice, it is paused, another process begins or resumes, and
-then later the original process is resumed. In this way multiple processes are part-way through execution at a single
+Interleaving execution - interleaving the execution steps of each process via time slices:
+only one process runs at a time, and if it does not complete during its time slice, 
+it is paused, another process begins or resumes, and then later the original process 
+is resumed. In this way multiple processes are part-way through execution at a single 
 instant, but only one process is being executed at that instant.
 
-Overlapping execution - overlapping of execution on a multiprocessor computer.  Processes are literally executed at the
-same time, but with different processors.
+Overlapping execution - overlapping of execution on a multiprocessor computer. Processes 
+are literally executed at the same time, but with different processors.
 
 ********************************************************************************
 Chapter 3: Processes
 ********************************************************************************
+Process VS Program
+A process is an instance of a program (currently running) and a program is a set of 
+instructions to perform a task
 
+*********************
+Process Control Block
+*********************
+Process Control Block (PCB) - a data structure that contains sufficient information 
+about a process so that the process can be interrupted and later resumed as if the 
+interruption had not occurred.
+
+Information found on the PCB includes: Identifier, State, Priority, Program Counter (PC),
+Memory Pointers, Context data, I/O Status Information, and Accounting information
+
+**************
+Process States
+**************
+New - new process is created to execute a program, but not yet loaded into main memory.  
+Reasons for new processes: new batch job, interactive log-on (terminal), created by 
+the OS to provide a service, spawned by existing process.
+
+Ready - processes move from new to ready when the OS is prepared to take on an additional 
+process.  The process is prepared to execute when given the opportunity.  
+Running -> Ready usually caused by taking the maximum allowed time to for uninterrupted execution.
+
+Running - the OS chooses a process from the ready state to run.  The process is currently being 
+executed.  For this chapter, assume a single processor, so at most one process at a time can 
+be in this state.
+
+Blocked/Waiting - A process that cannot execute until some event occurs, such as the completion of an 
+I/O operation.  Has to go back to ready state, cannot go back to run state directly.
+
+Exit - A process that has been released from the pool of executable processes by the OS because it either 
+halted or aborted for some reason.
+
+***************
+Supervisor Call
+***************
+Supervisor call (system call) - A user program can use a supervisor call to execute a function
+that is part of the OS.  Transfers to a routine that is part of the OS's code. I/O operation
+
+System calls provide an essential interface between a process and the OS. A system call is how
+a program requests a service from an OS's kernal. This may include hardware-related services (for
+example, accessing a hard disk drive), creation and execution of new processes, and communication with
+integral services such as processs scheduling.
+
+*********************************************
+Mechanisms for interrupting process execution
+*********************************************
+1.  Interrupt - External to the execution of the current instruction.
+
+    Clock Interrupt - OS determines if current running process has been running for the maximum
+    allowable unit of time, referred to as a time slice.  If so, the process must be switched
+    to a ready state and another process dispatched.
+
+    I/O interrupt - OS determines what I/O action has occurred, if it constitutes an event that one
+    or more processes are waiting, the OS moves all corresponding blocked processes to the ready state.
+
+    Memory Fault - The processor encounters a virtual memory address reference for a word that is not
+    in main memory.  The OS must bring the memory containing the reference from secondary memory to
+    main memory.  Process with the memory fault is placed in a blocked state, the OS performs a process
+    switch to resume execution of another process. After the desired block is brought into memory, that
+    process is placed in the Ready State.
+
+2.  trap - handles errors and exections such as breakpoints, divide by zero exections, and invalid
+    memory accesses.  Associated with the execution of of the current instruction.
+
+3.  Supervisor call (system call) - Handles calls to operating system functions
+
+*****************************
+Mode Switch VS Process Switch
+*****************************
+Process Switch - changes the state of a process (ready, running, exit, etc).  For example, a user
+process is running and an instruction is executed that requests an I/O  operation such as a file
+open.  This call results in transfer to a routine that is part of the OS code. The user of a
+system call may place the user process in the Blocked State.  Also referred to as a context switch.
+
+Mode Switch - Switches from user mode (less privileged) to kernel mode (more privileged).  Occurrs
+from an interrupt.
+
+A mode switch may occur without chaning the state of the process that is currently in the running
+state. The process switch, which involves a state change, requires more effort than a mode switch.
+
+***********************************
+UNIX User Running VS Kernel Running
+***********************************
+The user running state means that the process is executing in user mode.  The kernel running state
+means that the process is running in kernal mode.
+
+********************************************************************************
+Chapter 4: Processes and Threads
+********************************************************************************
+Relation between process and thread - processes are made up of one or more threads.  The unit of
+dispatching is usually referred to as a thread, the unit of ownership is usually referred to as
+a process or task.
+
+Multithreading - the ability of an OS to support multiple, concurrent paths of execution within
+a single process.
+
+********************************************************
+Uses for threads in a single-user multiprocessing system
+********************************************************
+Foreground and background work - for example in a spreadsheet program, one thread could display
+menus and read user input, while another thread executes user commands and updates the spreadsheet.
+This arrangment often increases the perceived speed of the application by allowing the program
+to prompt for the next command before the previous command is complete.
+
+Asynchronous processing - Asychronous elements in the program can be implemented as threads.
+
+Speed of execution - A multithreaded process can compute one batch of data while reading the next
+batch from a device.
+
+Modular Program Structure - Programs involved in a variety of activities or variety of sources
+and destinations of input and output may be easier to design and implement using threads.
+
+*******************************************************
+Threads VS Application of Multiple Cooperating Programs
+*******************************************************
+Creating new threads from an existing process takes less time than creating new processes. It also
+takes less time to terminate a thread than a process, less time to switch between two threads within
+the same process than to switch between two processes.  Threads can communicate faster and more
+efficiently.
+
+The seperate yet cooperating programs would not share a scope of variables and would be negatively
+affected by any mutual exclusion structure.
+
+******************************************************
+Kernel-Level Threads (KLT) VS User-Level Threads (ULT)
+******************************************************
+ULT - all of the work of thread management is done by the application and the kernel is not aware
+of the existence of threads.  The kernel schedules the process, the process schedules these threads.
+
+KLT - all of the work of thread management is done by the kernel.  Scheduling of threads is done
+by the OS scheduler.  Most common types of thread.  KLT do NOT have kernel level privileges.
+
+KLT Advantages: Can take advantage of multi-processing. If one thread is blocked, another thread
+can be scheduled from the same process.  
+
+KLT Disadvantages: transfer of control from one thread to another within the same process requires
+a mode switch to the kernel.
+
+ULT Advantages:  Can run on any OS, scheduling can be application specific, thread switching
+does not require kernel mode privileges
+
+ULT Disadvantages: System calls are typically blocking, meaning that when a thread makes a
+system call, all threads within the process are blocked.  Cannot take advantage of multi-
+processing.
+
+Jacketing - for ULT it is a technique that converts a blocking system call into a nonblocking
+system call.
+
+*********************
+Windows Standby State
+*********************
+Standby State - a state that a thread can possess where in it waits for its soon to be processor
+to become freed and available for use.
+
+********************************************************************************
+Chapter 5: Concurrency: Mutual Exclusion and Synchronization
+********************************************************************************
