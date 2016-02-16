@@ -14,6 +14,9 @@ below, please ask in class on Tuesday or email me about them.  If are unsure
 about something other students probably will be as well and it will be helpful 
 to everyone to discuss it in class.
 
+Information comes from the book Operating Systems Internals and Design Principles
+8th Edition by William Stallings
+
 ********************************************************************************
 Chapter 1: Computer System Overview
 ********************************************************************************
@@ -331,3 +334,166 @@ to become freed and available for use.
 ********************************************************************************
 Chapter 5: Concurrency: Mutual Exclusion and Synchronization
 ********************************************************************************
+Multiprogramming - the management of multiple processes within a uniprocessor system
+
+Multiprocessing - the management of multiple processes within a multiprocessor.  In this,
+a computer uses more than one CPU at a time
+
+*********************
+Table 5.1 Definitions
+*********************
+Atomic operation - The sequence of instruction is guaranteed to execute as a group, or
+not execute at all, having no visible effect on the system state.  Atomicity guarantees
+isolation from concurrent processes.
+
+Critical Section - A section of code within a process that requires access to shared resources
+and that must not be executed while another process is in a corresponding section of code.
+
+Deadlock - A situation in which two or more processes are unable to proceed because each is
+waiting for one of the others to do something
+
+Mutual Exclusion - The requirement that when one process is in a critical section that accesses
+shared resources, no other process may be in a critical section that accesses any of those shared
+resources
+
+Race Condition - A situation in which multiple threads threads or processes read and write a shared
+data item and the final result depends on the relative timing of their execution.
+
+Starvation - A situation in which runnable process is overlooked indefinitely by the scheduler;
+although it is able to proceed, it is never choosen.
+
+***********************************************************************************
+How Interleaved or Overlapped Execution of Critical Sections Cause Data Incoherence
+***********************************************************************************
+Page 202 to 204 Examples
+Examples in homework
+Both schemes are effected by the same problem and thus can be solved by the same solution approach,
+only differing on implementation.
+
+*****************************************************
+Hardware techniques for guaranteeing Mutual Exclusion
+*****************************************************
+Interrupt Disabling - to guarantee mutual exclusion, it is sufficient to prevent a process from
+being interrupted.  This capability can be provided in the form of primitives defined by the OS
+kernel for disabling and enabling interrupts.  Only on a uniprocessor system
+
+Disadvantage is that the efficiency of execution could be noticeably degraded because the processor
+is limited in its ability to interleave processes.
+
+Special Machine Instructions - Performs several machine instructions that carry out two actions
+automically.  This approach utilizes busy waiting, starvation (no ordering for the busy waiting
+processes) and deadlock is possible.
+
+Disadvantages are busy waiting is employed: thus, while a process is waiting for access to a critical
+section, it continues to consume processor time.  Starvation is possible: when a process leaves a
+critical section and more than one process is waiting, the selection of a waiting process is
+arbitrary.  Thus, some process could indefinitely be denied access.  Deadlock is also possible: on
+a single-processor system, P1 executes a special instruction and enters a critical section, P1 is then
+interrupted to give the processor to P2, which has a higher priority.  If P2 attempts to get a resource
+currently used by P1, it is denied access.
+
+**********
+Semaphores
+**********
+Semaphore - an integer value used for signaling among processes. Only three operations may be performed
+on a semaphore, all of which are atomic: initalizatize, decrement, and increment.  Decrement - could block
+a a process if it is less than 0, increment - could unblock a process if it becomes 0 or greater.
+
+Wait - decrements the semaphore value, if less than 0, the process that called the wait is blocked
+signal - increments the semaphore value, if the value is less than or equal to 0, than a process
+that was waiting to execute becomes unblocked.
+
+Strong semaphore - uses FIFO policy for the queue of blocked proceeses
+Weak semaphore - does not use FIFO, removal policy is not specified
+Strong semaphores guarantee freedom from starvation, while weak semaphores do not
+
+*************************
+Producer/Consumer Problem
+*************************
+page 220
+There are one or more producers (creators of data into a buffer) and one consumer who retrives the
+data from the buffer one at a time.  One agent (consumer or producer) may access the buffer at a
+time, and the consumer must not write to a full buffer and the consumer must not try to read from
+an empty buffer.
+
+Figure 5.9 page 222 - solution with semaphores
+
+********
+Monitors
+********
+The monitor is a programming language construct that provides the functionality of a semaphore
+but easier to control.
+
+Characteristics of a monitor:
+1.  Local data variables can only be accessed by the monitor's procedures and not by any external
+    procedure
+2.  A process can enter the monitor by calling one of its procedures
+3.  Only one process at a time can be executing in the monitor, any other processes trying to
+    get access are blocked, waiting until the monitor is available
+
+Condition variables - The way a monitor supports synchronization.  Contianed in and only accessible
+by the monitor.  Has two types of functions:
+cwait(c) - suspend execution of the calling process on condition c, monitor now available for use
+by another process
+csignal(c) - resume execution of the calling process blocked after a cwait on the same condition.
+If there are several such processes, choose one of them; if none, do nothing.
+
+If a process in a monitor signals and no task is waiting on the condition variable, the signal is
+lost
+
+***********************************
+Message Passing and Synchronization
+***********************************
+Messages can be used for process synchronization by using the send(destination, message) and 
+recieve(source, message) functions
+
+1.  If a message has been previously sent, the message is received and execution continues
+2.  If there is no waiting message, then either a. the process is blocked until message arrives
+    or b. the process continues to execute, abandononing the attempt to receive.
+
+************************************************
+Blocking VS Non-Blocking message send or receive
+************************************************
+Blocking send/blocking receive - both the sender and receiver are blocked until the message is
+delivered.  This combination allows for tight synchronization between processes.
+
+Nonblocking send/blocking receive - Sender may continue on, receiver is blocked until the requested
+message arrives.  Allows a process to send to or more messages to a variety of destinations as fast
+as possible.  Process that must receive a message before it does any work is blocked until message
+arrives.
+
+Nonblocking send/nonblocking receive - Neither party needs to wait for the message to be received.
+
+*********
+mailboxes
+*********
+For indirect addressing where messages are not sent directly from the sender to the receiver, but to
+a shared data structure consisting of queues that can temporarily hold messages, called a mailbox.
+If a process needs to send a message to another process, it will send the message to the appropriate
+mailbox, then the other process will pick up the message from the mailbox.
+
+***********************
+Readers/Writers Problem
+***********************
+Readers/Writers problem - A shared set of data in which there are many processes that only read the
+data or only write to the data.  Has 3 conditions:
+1.  Could have any number of readers reading the date at the same time
+2.  Only one writer may write to the data at one time
+3.  If a writer is writing to the data, no reader can read it
+
+Study figure 5.22 on page 241
+
+*********
+UNIX Pipe
+*********
+| pipes output to another process
+A pipe is a circular buffer that allows two processes to communicate on the producer/consumer
+model.  It is first-in-first-out queue, written by one process and read by another.
+
+********************************************************************************
+Chapter 6: Deadlocks
+********************************************************************************
+A deadlock is a permanent blocking of a set of processes that either compete for system resources
+or communicate with each other.  A set of processes is blocked awaiting an event (like the freeing
+up of a resource) that can only be triggered by another blocked process.  It is permanent because
+none of the events is ever triggered.
