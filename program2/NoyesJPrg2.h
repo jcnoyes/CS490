@@ -14,11 +14,9 @@ class list_element
 {
 public:
 	bool isHead;			//tells if it is at the head of the list
-	bool isTail;			//tells if it is at the end of the list
 	int dataValue;			//the value of the page
 	bool refBit;			//the reference bit, if 0, it can be replaced
 	list_element *next;		//the next item in the list, null if it is at the tail
-
 };
 
 //message object, used to keep track of data being passed around
@@ -26,7 +24,8 @@ class message
 {
 public:
 	int itemCount;			//the number of items in a list
+	int currentInTable;		//the number of items currently in the table
 	int pageFaults;			//number of page faults encounted
-	int pageSize;			//the size of the page table
+	int pageTableSize;			//the size of the page table
 	string dataSetNum;		//string telling user how big the dataset is
 };
