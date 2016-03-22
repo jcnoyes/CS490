@@ -24,8 +24,8 @@ Program Counter (PC) - holds the address of the next instruction to be fetched.
 Unless instructed otherwise, the processor always increments the PC after each
 instruction fetch.
 
-Instruction Register - The register that contains the instruction that will currently
-be executed.
+Instruction Register - The register that contains the instruction that is currently
+being executed.
 
 Memory Address Register (MAR) - an internal register of the processor, which specifies
 the address in memory for the next read/write.
