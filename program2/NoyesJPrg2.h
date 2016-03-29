@@ -27,5 +27,5 @@ public:
 	int currentInTable;		//the number of items currently in the table
 	int pageFaults;			//number of page faults encounted
 	int pageTableSize;			//the size of the page table
-	string dataSetNum;		//string telling user how big the dataset is
+	string dataSetDesc;		//string telling user how big the dataset is
 };
