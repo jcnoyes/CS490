@@ -7,6 +7,7 @@
 ******************************************************************************/
 
 #include <string>
+#include <fstream>
 using namespace std;
 
 //list_element object, used to place in list
@@ -23,9 +24,18 @@ public:
 class message
 {
 public:
-	int itemCount;			//the number of items in a list
+	int itemCount;			//the number of items currently processed
 	int currentInTable;		//the number of items currently in the table
 	int pageFaults;			//number of page faults encounted
 	int pageTableSize;			//the size of the page table
 	string dataSetDesc;		//string telling user how big the dataset is
+	double pageFaultRatio;	//number of page faults divided by the item count
+};
+
+//class that will keep track of the page that was replaced, what it was replaced with, etc.
+class pageReferenceInfo
+{
+public:
+	int pageReplaced;
+	int referenced;
 };
