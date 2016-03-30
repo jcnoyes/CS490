@@ -14,13 +14,13 @@
 using namespace std;
 
 //function prototypes
-bool readFile(list_element *&h, string fname, message *m, ofstream& outf);
+bool readFile(list_element *&h, string fname, message *m, ofstream& outf, int timesR[]);
 bool addToList(list_element *&head, message *m, int pageValue, ofstream& outf);
 void createMessage(int table_size, string descrition, message *m);
 void writeDataSetHeader(ofstream& outstream, message *m);
 void writeSummaryToFile(ofstream& outfile, message *m);
 void writeDetailedData(ofstream& outstream, pageReferenceInfo pinfo, int outCounter, list_element *le);
-void writeSummaryTableHeaders(ofstream& outSum, string dataSetName);
+void writeSummaryTableHeaders(ofstream& outSum, string dataSetName, int timesR[]);
 void writeSummaryTables(ofstream& outSum, message *m);
 
 //start of execution
@@ -40,6 +40,15 @@ void main()
 	list_element *head_ds2_5 = NULL;
 	list_element *head_ds2_7 = NULL;
 
+	//times referenced array for each data set
+	int timesReferencedS1_3[10] = {0,0,0,0,0,0,0,0,0,0};
+	int timesReferencedS1_5[10] = {0,0,0,0,0,0,0,0,0,0};
+	int timesReferencedS1_7[10] = {0,0,0,0,0,0,0,0,0,0};
+
+	int timesReferencedS2_3[10] = {0,0,0,0,0,0,0,0,0,0};
+	int timesReferencedS2_5[10] = {0,0,0,0,0,0,0,0,0,0};
+	int timesReferencedS2_7[10] = {0,0,0,0,0,0,0,0,0,0};
+
 	//Greet the user
 	cout << "Hello, welcome to Joseph Noyes' program 2" << endl;
 
@@ -58,7 +67,7 @@ void main()
 
 	//start process for data set 1 resdent size 3
 	writeDataSetHeader(output, dataSet1_Message_3);
-	readFile(head_ds1_3, filename, dataSet1_Message_3, output);
+	readFile(head_ds1_3, filename, dataSet1_Message_3, output, timesReferencedS1_3);
 	writeSummaryToFile(output, dataSet1_Message_3);
 
 	//ready the message object for first data set, resident size 5
@@ -67,7 +76,7 @@ void main()
 
 	//start process for data set 1 resident size 5
 	writeDataSetHeader(output, dataSet1_Message_5);
-	readFile(head_ds1_5, filename, dataSet1_Message_5, output);
+	readFile(head_ds1_5, filename, dataSet1_Message_5, output, timesReferencedS1_5);
 	writeSummaryToFile(output, dataSet1_Message_5);
 
 	//ready the message object for first data set, resident size 7
@@ -76,7 +85,7 @@ void main()
 
 	//start process for data set 1 resident size 7
 	writeDataSetHeader(output, dataSet1_Message_7);
-	readFile(head_ds1_7, filename, dataSet1_Message_7, output);
+	readFile(head_ds1_7, filename, dataSet1_Message_7, output, timesReferencedS1_7);
 	writeSummaryToFile(output, dataSet1_Message_7);
 
 	//prompt user for the second input file
@@ -89,7 +98,7 @@ void main()
 
 	//start process for data set 2 resident size 3
 	writeDataSetHeader(output, dataSet2_Message_3);
-	readFile(head_ds2_3, filename,dataSet2_Message_3, output);
+	readFile(head_ds2_3, filename,dataSet2_Message_3, output, timesReferencedS2_3);
 	writeSummaryToFile(output, dataSet2_Message_3);
 
 	//ready the message for second data set, resident size 5
@@ -98,7 +107,7 @@ void main()
 
 	//start process for data set 2, resident size 5
 	writeDataSetHeader(output, dataSet2_Message_5);
-	readFile(head_ds2_5, filename, dataSet2_Message_5, output);
+	readFile(head_ds2_5, filename, dataSet2_Message_5, output, timesReferencedS2_5);
 	writeSummaryToFile(output, dataSet2_Message_5);
 
 	//ready the message for second data set, resident size 7
@@ -107,7 +116,7 @@ void main()
 
 	//start process for data set 2, resident size 7
 	writeDataSetHeader(output, dataSet2_Message_7);
-	readFile(head_ds2_7, filename, dataSet2_Message_7, output);
+	readFile(head_ds2_7, filename, dataSet2_Message_7, output, timesReferencedS2_7);
 	writeSummaryToFile(output, dataSet2_Message_7);
 
 	//close the output file
@@ -118,13 +127,13 @@ void main()
 	ofstream summaryTable("Noyes_SummaryTable.txt");
 
 	//write to summary file for dataSet 1
-	writeSummaryTableHeaders(summaryTable, "Data Set 1");
+	writeSummaryTableHeaders(summaryTable, "Data Set 1", timesReferencedS1_3);
 	writeSummaryTables(summaryTable, dataSet1_Message_3);
 	writeSummaryTables(summaryTable, dataSet1_Message_5);
 	writeSummaryTables(summaryTable, dataSet1_Message_7);
 
 	//write to summary file for dataSet 2
-	writeSummaryTableHeaders(summaryTable, "Data Set 2");
+	writeSummaryTableHeaders(summaryTable, "Data Set 2", timesReferencedS2_3);
 	writeSummaryTables(summaryTable, dataSet2_Message_3);
 	writeSummaryTables(summaryTable, dataSet2_Message_5);
 	writeSummaryTables(summaryTable, dataSet2_Message_7);
@@ -132,7 +141,7 @@ void main()
 }
 
 //function used to read in data from file
-bool readFile(list_element *&h, string fname, message *m, ofstream& outf)
+bool readFile(list_element *&h, string fname, message *m, ofstream& outf, int timesR[])
 {
 	cout << "Starting to process file: " << fname << " for " << m->dataSetDesc << endl << endl;
 	//start an input file stream, obtain intergers seperated by commas
@@ -161,6 +170,7 @@ bool readFile(list_element *&h, string fname, message *m, ofstream& outf)
 					addToList(h, m, value, outf);  //add to link list
 					
 					//update values
+					timesR[value]++;
 					m->itemCount++;
 					double pf = m->pageFaults;
 					double count = m->itemCount;
@@ -427,11 +437,19 @@ void writeDetailedData(ofstream& outstream, pageReferenceInfo pinfo, int outCoun
 }
 
 //function to write the summary table's headers
-void writeSummaryTableHeaders(ofstream& outSum, string dataSetName)
+void writeSummaryTableHeaders(ofstream& outSum, string dataSetName, int timesR[])
 {
 	outSum << "********************************************************************" << endl;
 	outSum << dataSetName << endl;
-	outSum << "Resident Set Size\tNumber of faults\tPage Fault Frequency" << endl;
+	outSum << "********************************************************************" << endl;
+
+	//print out the times each page was referenced
+	for(int i = 0; i < 10; i++)
+	{
+		outSum << "Page " << i << " was referenced " << timesR[i] << " times." << endl;
+	}
+	outSum << "********************************************************************" << endl;
+	outSum << endl << "Resident Set Size\tNumber of faults\tPage Fault Frequency" << endl;
 }
 
 void writeSummaryTables(ofstream& outSum, message *m)
