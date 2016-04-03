@@ -1,0 +1,105 @@
+********************************************************************************
+Chapter 6: Deadlocks
+********************************************************************************
+A deadlock is a permanent blocking of a set of processes that either compete for system resources
+or communicate with each other.  A set of processes is blocked awaiting an event (like the freeing
+up of a resource) that can only be triggered by another blocked process.  It is permanent because
+none of the events is ever triggered.
+
+Starvation - A situation in which runnable process is overlooked indefinitely by the scheduler;
+although it is able to proceed, it is never choosen.
+
+********************************
+4 Conditions Needed for Deadlock
+********************************
+1.  Mutual exclusion - Only one process may use a resource at a time.
+2.  Hold and Wait - A process may hold allocated resources while awaiting assignment of other
+    resources
+3.  No preemption - No resource can be forcibly removed from a process holding it
+4.  Circular Wait - A closed chain of processes exists, such that each process holds at least
+    one resource needed by the next process in the chain. Figure 6.5c and 6.6 in book.
+
+*******************
+Deadlock Prevention
+*******************
+Study table 6.1 on page 266
+
+Prevention - To design a system in such a way that the possibly of deadlock is excluded.
+
+Indirect method of deadlock prevention - to prevent the occurance of one of the three neccessary
+conditions of deadlock (mutual exclusion, hold and wait, no preemption).
+
+Direct method of deadlock prevention - prevent the occurance of a circular wait.
+
+*************************************
+Indirect Method of Deadlock Stratgies
+*************************************
+Mutual Exclusion - In general, this condition must be allowed.
+
+Hold and Wait - Can be prevented by requiring that a process request all of its required resources
+at once and block the process until it can get all of them at the same time.  Inefficient in two ways
+1.  A process may be held up for a long time waiting for all its resources, when it could have started
+    with only some of its resources.
+2.  Resources allocated to a process may remain unused for a considerable period, during which they are
+    denined to other processes.
+
+No Preemption - Can be prevented in many ways.  If a process is holding certain resources is denied a
+further request, that process must release its original resources and, if neccessary, request them again
+together with the additional resource.  Or, if a a process requests a resource that is currently held 
+by another process, the OS may preempt the second process and require it to release its resources. The latter
+scheme would only prevent deadlock if no two processes possed the same priority. This approach is practical
+only if the resouces state can be easily saved and restored later.
+
+***********************************
+Direct Method of Deadlock Stratgies
+***********************************
+Circular wait - Can be prevented by defining a linear ordering of resource types.  If a resource has been
+allocated resources of type R, then it can only request resources following the type R ordering.
+
+Resource Ri precedes Rj in ordering, if i < j. Now processes A and B are deadlocked because A has acquired Ri
+and requested Rj and B has Rj and requested Ri.  This is impossible because it implies i < j and j < i.
+
+Maybe inefficinet, slowing down processes and denying resource access unneccessarily.
+
+******************
+Deadlock Avoidance
+******************
+Deadlock Avoidance allows the three conditions of deadlock, but makes judicious choices to assure that the
+deadlock point is never reached.  Allows for more concurrency.  A decision is made dynammically whether the
+current resource allocation request will, if granted, potentially lead to a deadlock, therefore it must know
+future process resource requests.
+
+Process Initiation Denial - A process is only started if the maximum claim of all current processes plus those
+of the new process can be met.  Not optimial because it assumes the worst, that all processes will make their
+maximum claims together.  All resources used by a process must be declared in advance.
+
+Resource Allocation Denial - aka banker's algorithm.  page 272-276
+
+******************
+Deadlock detection
+******************
+Do not limit resource access or restrict actions like deadlock prevention.  Instead, requested resources are
+granted to processes whenever it is possible.  Periodically the OS perfoms an algorithm that allows it to detect
+the circular wait condition.
+
+Detection allogrithm - Can be made as often as when each resource is requested.  Simple since it is incremental
+change and it detects the deadlocks early, but takes a lot of processor time.
+
+algorithm
+1.  Mark each process that has a row in the Allocation matrix of all zeros. A process that has no allocation
+    resources cannot participate in a deadlock.
+2.  Initialize a temporary vector W to equal the Available vector
+3.  Find an index i such that process i is currently unmarked and the ith row of Q (request matrix) is less 
+    than or equal to W.  That is Qik <= Wk, for 1 <= K <= m. If no such row is found, terminate algorithm
+4.  If such a row if found, mark process i and add the corresponding row of allocation matrix to W. That is,
+    set Wk = Wk + Aik, for 1 <= K <= m.  Return to step 3.
+
+A deadlock exists if and only if there are unmarked processes at the end of the algorithm.  The set of unmarked
+rows correspond with the set of deadlocked processes.
+
+Does not guarantee to prevent deadlock, just to find one if it exists.
+page 278 - Deadlock Recovery
+
+********************************************************************************
+Chapter 7 Memory
+********************************************************************************
