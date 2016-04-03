@@ -103,3 +103,30 @@ page 278 - Deadlock Recovery
 ********************************************************************************
 Chapter 7 Memory
 ********************************************************************************
+Memory Management Requirements
+* Relocation - The ability to swap programs in and out of main memory and place it in a new main memory region
+               once they are swapped in
+* Protection - each process should be protected against unwanted interference by other processes, whether accidental
+               or intentional.  Therefore, programs in other processes cannot reference memory locations in a process
+               for reading or writing without permission.  Protected by processor hardware.
+* Sharing - Processes that are cooperating on the same task may need to share access to the same data structure.  Memory
+            management must therefore allow controlled access to shared areas of memory without compromising essential
+            protection.
+* Logical Organization - Memory is linear, most programs are not (usually organized into modules, some of which are not
+                         modifiable). If the OS and computer hardware can effectiviely deal with user programs and data
+                         in the form of modules of some sort, then advanatages can be realized:
+                         1.  Modules can be written and compiled independently, with all references from one module to
+                             another resolved by the system at run time.
+                         2.  With modest additional overhead, different degress of protection (read only, execute only)
+                             can be given to different modules.
+                         3.  It is possible to introduce mechanisms by which modules can be shared among processes.
+* Physical Organization - Memory is organized in two-level scheme (main memory, which is fast, volatile, and expensive,
+                          and secondary memory, which is cheaper, slower, and not volatile).  The flow of information
+                          between the two levels is a concern and the task of moving this information between the two levels
+                          is a system responsibility.
+
+***************************************************************************************************************************************
+Table 7.2: memory management techniques.  Good for getting an overview of the area.  You can ignore the issues surrounding segmentation
+***************************************************************************************************************************************
+
+
